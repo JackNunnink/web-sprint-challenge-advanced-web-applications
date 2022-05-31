@@ -41,9 +41,13 @@ export default function App() {
         // console.log(res.data)
         redirectToArticles()
         setMessage(res.data.message)
+        setSpinnerOn(true)
       })
       .catch(err => {
         setMessage(err?.response?.data?.message)
+      })
+      .finally(() => {
+        setSpinnerOn(false)
       })
   }
   
@@ -72,9 +76,13 @@ export default function App() {
         // console.log(res.data);
         setArticles(res.data.articles)
         setMessage(res.data.message)
+        setSpinnerOn(true)
       })
       .catch(err => {
         setMessage(err?.response?.data?.message)
+      })
+      .finally(() => {
+        setSpinnerOn(false)
       })
   }
 
@@ -85,7 +93,7 @@ export default function App() {
     // to inspect the response from the server.
     axiosWithAuth().post(articlesUrl, article )
       .then(res => {
-        console.log(res.data)
+        // console.log(res.data)
         setMessage(res.data.message)
         setArticles([ ...articles, res.data.article ])
       })
@@ -94,9 +102,36 @@ export default function App() {
       })
   }
 
-  const updateArticle = ({ article_id, article }) => {
+  const updateArticle = article_id => {
     // ✨ implement
     // You got this!
+    setCurrentArticleId(article_id)
+  }
+
+  const putArticle = article => {
+    const { article_id, ...changes } = article
+    axiosWithAuth().put(`${articlesUrl}/${article_id}`, changes)
+      .then(res => {
+        console.log(res.data)
+        setArticles(articles.map(art => {
+          return art.article_id === article_id
+            ? res.data.article
+            : art
+        }))
+        setMessage(res.data.message)
+        setCurrentArticleId(null)
+      })
+      .catch(err => {
+        setMessage(err?.response?.data?.message)
+      })
+  }
+
+  const onSubmit = article => {
+    if(currentArticleId) {
+      putArticle(article)
+    } else {
+      postArticle(article)
+    }
   }
 
   const deleteArticle = article_id => {
@@ -111,12 +146,15 @@ export default function App() {
       .catch(err => {
         setMessage(err?.response?.data?.message)
       })
+      .finally(() => {
+        getArticles()
+      })
   }
 
   return (
     // ✨ fix the JSX: `Spinner`, `Message`, `LoginForm`, `ArticleForm` and `Articles` expect props ❗
     <>
-      <Spinner />
+      <Spinner on={spinnerOn}/>
       <Message message={message}/>
       <button id="logout" onClick={logout}>Logout from app</button>
       <div id="wrapper" style={{ opacity: spinnerOn ? "0.25" : "1" }}> {/* <-- do not change this line */}
@@ -129,8 +167,12 @@ export default function App() {
           <Route path="/" element={<LoginForm login={login} />} />
           <Route path="articles" element={
             <>
-              <ArticleForm onSubmit={postArticle} />
+              <ArticleForm 
+                onSubmit={onSubmit}
+                article={articles.find(art => art .article_id === currentArticleId)} 
+              />
               <Articles 
+                updateArticle={updateArticle}
                 deleteArticle={deleteArticle} 
                 getArticles={getArticles} 
                 articles={articles} 
