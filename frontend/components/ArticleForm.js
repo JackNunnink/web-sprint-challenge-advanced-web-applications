@@ -30,6 +30,11 @@ export default function ArticleForm(props) {
     setValues(initialFormValues)
   }
 
+  const cancelEdit = evt => {
+    evt.preventDefault()
+    setValues(initialFormValues)
+  }
+
   const isDisabled = () => {
     // ✨ implement
     // Make sure the inputs have some values
@@ -44,7 +49,7 @@ export default function ArticleForm(props) {
     // ✨ fix the JSX: make the heading display either "Edit" or "Create"
     // and replace Function.prototype with the correct function
     <form id="form" onSubmit={submit}>
-      <h2>Create Article</h2>
+      <h2>Edit or Create Article</h2>
       <input
         maxLength={50}
         onChange={onChange}
@@ -67,7 +72,7 @@ export default function ArticleForm(props) {
       </select>
       <div className="button-group">
         <button disabled={isDisabled()} id="submitArticle">Submit</button>
-        <button onClick={Function.prototype}>Cancel edit</button>
+        <button disabled={isDisabled()} onClick={() => cancelEdit()}>Cancel edit</button>
       </div>
     </form>
   )
